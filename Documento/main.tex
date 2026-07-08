@@ -56,3 +56,41 @@
     \vfill
 
 \end{titlepage}
+
+% --ÍNDICES --
+\tableofcontents
+\newpage
+\listoffigures
+\listoftables
+\newpage
+
+%---------------------
+\section{Introducción}
+\subsection{Propósito del documento}
+El presente informe corresponde a la Práctica Experimental N.\textsuperscript{o} 3 de la asignatura Ingeniería de Requerimientos y tiene como propósito \textbf{revisar, refinar y modelar} la Especificación de Requisitos de Software (SRS) del sistema \textbf{AquaGest}, elaborada conforme al estándar IEEE/ISO/IEC 29148:2018 \cite{ieee29148} para la Compañía Biofina (Camaronera El Guasmo). Sobre la base del SRS ya construido en las entregas 1A y 1B (25 requisitos funcionales, 7 requisitos no funcionales y 6 restricciones), en esta práctica se desarrollan cinco pasos: (i) revisión y refinamiento del SRS mediante detección de defectos y reescritura en sintaxis EARS; (ii) modelo de datos con diagrama Entidad--Relación en notación Crow's Foot y su transformación a un diagrama de clases UML; (iii) modelo funcional mediante Diagramas de Flujo de Datos (Nivel 0, Nivel 1 y esencial) y un diagrama de actividades UML; (iv) modelo de comportamiento con una máquina de estados UML y un diagrama de secuencia; y (v) matriz de trazabilidad entre requisitos y modelos, con detección de \textit{gaps} y \textit{gold plating}.
+
+\subsection{Alcance del producto}
+AquaGest es una aplicación web (con soporte de tabletas Android en campo) que digitaliza el ciclo productivo completo de una camaronera: gestión de estanques, control de siembras y grameos, monitoreo de parámetros del agua con sensores IoT, plan de alimentación, historial sanitario, gestión de empleados y tareas, inventario de bodega, mantenimiento de equipos, registro de cosechas, reportes comparativos y un módulo de Inteligencia Artificial para predicción del momento óptimo de cosecha \cite{zhang2023,pratama2022}. Quedan explícitamente fuera del alcance la logística de transporte externo, la contabilidad/facturación, el control de riego externo y el comercio electrónico.
+
+\section{Fundamento teórico}
+\subsection{El estándar IEEE/ISO/IEC 29148:2018}
+El estándar 29148 \cite{ieee29148} define los procesos y productos de la ingeniería de requisitos a lo largo del ciclo de vida, y establece las características de calidad que debe poseer cada requisito individual (necesario, no ambiguo, verificable, factible, singular, trazable) y el conjunto de requisitos (completo, consistente, acotado). Estas características constituyen la lista de verificación empleada en el Paso~1 para clasificar los defectos del SRS. Estudios empíricos recientes confirman que la ambigüedad y la falta de verificabilidad son los defectos más frecuentes en SRS industriales \cite{mendez2021,ferrari2022}.
+
+\subsection{Sintaxis EARS para la formalización de requisitos}
+EARS (\textit{Easy Approach to Requirements Syntax}) \cite{mavin2009} propone cinco plantillas sintácticas que eliminan la ambigüedad estructural: ubicua (\textit{``The system shall\ldots''}), dirigida por eventos (\textit{``When $\langle$evento$\rangle$, the system shall\ldots''}), dirigida por estados (\textit{``While $\langle$estado$\rangle$, the system shall\ldots''}), de comportamiento no deseado (\textit{``If $\langle$condición$\rangle$, then the system shall\ldots''}) y opcional (\textit{``Where $\langle$característica$\rangle$, the system shall\ldots''}). En el Paso~1 cada requisito funcional se reescribe con la plantilla EARS que mejor captura su semántica.
+
+\subsection{Modelo Entidad--Relación y normalización}
+El modelo ER \cite{chen1976} representa la perspectiva de datos mediante entidades, atributos y relaciones con cardinalidad y participación. La notación Crow's Foot expresa gráficamente las multiplicidades mínima y máxima. La normalización hasta la Tercera Forma Normal (3FN) \cite{elmasri2016} garantiza que cada atributo no clave dependa funcional y directamente de la clave primaria completa, eliminando redundancias y anomalías de actualización.
+
+\subsection{Diagrama de clases UML y transformación desde ER}
+UML 2.5.1 \cite{omg2017} define el diagrama de clases como la vista estructural del sistema: clases con atributos tipados y visibilidades ($+$ público, $-$ privado, $\#$ protegido), operaciones y asociaciones con multiplicidad. La transformación ER$\rightarrow$UML convierte entidades en clases, atributos en atributos tipados, y relaciones M:N en \textbf{clases asociativas} que absorben los atributos propios de la relación.
+
+\subsection{Análisis estructurado: Diagramas de Flujo de Datos}
+El DFD \cite{yourdon1989} modela la perspectiva funcional: procesos que transforman flujos de datos, entidades externas y almacenes. El Nivel 0 (diagrama de contexto expandido) muestra el proceso central; el Nivel 1 lo descompone en subprocesos que deben estar \textbf{balanceados} (todo flujo que entra o sale del Nivel 0 debe aparecer en el Nivel 1). El DFD esencial abstrae la tecnología y representa la respuesta lógica ideal a cada evento del entorno.
+
+\subsection{Modelos de comportamiento: estados, secuencia y actividades}
+La máquina de estados UML describe el ciclo de vida de una instancia mediante estados, transiciones \textit{evento[condición]/acción} y estados compuestos con subestados. El diagrama de secuencia modela la interacción temporal entre líneas de vida mediante mensajes síncronos y asíncronos y fragmentos combinados (\texttt{alt}, \texttt{loop}, \texttt{opt}). El diagrama de actividades, con \textit{swimlanes}, decisiones, \textit{fork/join} y flujos de objetos, modela la coordinación de trabajo entre roles \cite{omg2017,swebok2024}.
+
+\subsection{Trazabilidad de requisitos}
+La trazabilidad vincula cada requisito con su origen (evidencias de elicitación \cite{horkoff2021,hatton2023}) y con los artefactos de diseño que lo satisfacen. La matriz RF$\times$modelos permite detectar \textit{gaps} (requisitos sin cobertura en los modelos) y \textit{gold plating} (elementos de los modelos que no responden a ningún requisito), dos riesgos clásicos de inconsistencia \cite{ieee29148,encinas2022}.
+
