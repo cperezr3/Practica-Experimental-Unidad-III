@@ -94,3 +94,214 @@ La máquina de estados UML describe el ciclo de vida de una instancia mediante e
 \subsection{Trazabilidad de requisitos}
 La trazabilidad vincula cada requisito con su origen (evidencias de elicitación \cite{horkoff2021,hatton2023}) y con los artefactos de diseño que lo satisfacen. La matriz RF$\times$modelos permite detectar \textit{gaps} (requisitos sin cobertura en los modelos) y \textit{gold plating} (elementos de los modelos que no responden a ningún requisito), dos riesgos clásicos de inconsistencia \cite{ieee29148,encinas2022}.
 
+%---------------------
+% ============================================================
+\section{Paso 1 --- Revisión y refinamiento del SRS}
+\subsection{Evaluación según IEEE 29148 y defectos identificados}
+Se auditó el conjunto de 25~RF y 7~RNF del SRS de AquaGest contra las características de calidad del estándar \cite{ieee29148}. La Tabla~\ref{tab:defectos} resume los siete defectos encontrados.
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{1.1cm}|p{5.1cm}|p{2.5cm}|p{5.3cm}|}
+\caption{Defectos identificados en el SRS de AquaGest.}
+\label{tab:defectos}\\
+\hline
+\textbf{ID} & \textbf{Defecto} & \textbf{Tipo} & \textbf{Corrección propuesta}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{ID} & \textbf{Defecto} & \textbf{Tipo} & \textbf{Corrección propuesta}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+D-01 & RF-02: el criterio de verificación indica ``1\,500\,000 larvas ($\pm5$'' con tolerancia truncada y sin unidad porcentual explícita. & Ambigüedad & Especificar tolerancia completa: ``para 5~ha el sistema sugiere $1\,500\,000$ larvas con tolerancia de $\pm5\%$'' (300\,000 larvas/ha).\\
+\hline
+D-02 & RF-03: el rango de sobrecarga ``1000--2000~lb'' no indica si es por estanque o por hectárea, ni referencia la evaluación de oxígeno exigida por el técnico acuícola (EV-02). & Incompletitud & Fijar la unidad ``libras adicionales por estanque'' y añadir la precondición de evaluación de oxígeno/aireación registrada antes de autorizar la sobrecarga.\\
+\hline
+D-03 & RF-08: el umbral ``ganancia $<2$~g'' no define la ventana temporal; el acta EV-01 establece ganancia esperada de 2--3~g \textbf{por semana}. & Inconsistencia & Reescribir el umbral como ``ganancia semanal $<2$~g entre dos grameos consecutivos'', alineado con la evidencia EV-01.\\
+\hline
+D-04 & RF-10: exige alertas ante valores ``fuera del rango óptimo'' pero el SRS no define rangos por defecto por parámetro, delegándolo todo a configuración. & Incompletitud & Incluir tabla de rangos iniciales por parámetro (p.~ej. oxígeno disuelto $\geq 4$~mg/L, pH 7,5--8,5) configurables por el Administrador.\\
+\hline
+D-05 & Varios RF (RF-01, RF-09, RF-15) usan la fórmula ``el sistema debe \textit{permitir} registrar'', que describe una capacidad y no un comportamiento observable. & Redacción no verificable & Sustituir por comportamiento activo EARS: ``When the actor submits\ldots, the system shall record\ldots'', con respuesta observable y medible.\\
+\hline
+D-06 & RF-12: no especifica la fórmula ni la fuente de la tasa de alimentación aplicada sobre la biomasa estimada. & Ambigüedad & Explicitar: ración diaria $=$ biomasa estimada $\times$ tasa de alimentación ($\%$) por etapa, con tabla de tasas por defecto editable.\\
+\hline
+D-07 & RF-25: su precondición (dos ciclos históricos completos) no es satisfacible en la primera versión, por lo que el criterio de verificación no es ejecutable en la entrega inicial. & No verificable (temporalmente) & Declarar verificación en dos fases: fase~1 con \textit{dataset} sintético/da\-tos de otra camaronera; fase~2 con datos propios al completar dos ciclos.\\
+
+\end{longtable}
+
+\subsection{Requisitos corregidos con sintaxis EARS}
+La Tabla~\ref{tab:ears} reescribe los 25 requisitos funcionales usando las plantillas EARS \cite{mavin2009}. Se conserva el identificador original para mantener la trazabilidad con las entregas previas.
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{1.3cm}|p{13.2cm}|}
+\caption{Requisitos funcionales formalizados con sintaxis EARS.}
+\label{tab:ears}\\
+\hline
+\textbf{ID} & \textbf{Requisito (EARS)}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{ID} & \textbf{Requisito (EARS)}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+RF-01 & When the Administrator submits a new pond with unique ID, name, surface area (ha) and initial state, the system shall persist the pond and display it in the pond list within 2 seconds.\\
+\hline
+RF-02 & When a pond with a valid surface area ($>0$~ha) is registered, the system shall compute its maximum seeding capacity at 300{,}000 larvae per hectare with a tolerance of $\pm5\%$.\\
+\hline
+RF-03 & While a pond has an active seeding, when the Administrator requests a controlled overload between 1{,}000 and 2{,}000 additional pounds per pond with a mandatory justification and a recorded oxygen assessment, the system shall register the overload linked to the seeding.\\
+\hline
+RF-04 & When an authorized user changes the state of a pond (active, preparation, harvest, inactive), the system shall update the state and record user, date and previous state in the audit trail.\\
+\hline
+RF-05 & When the Production Operator submits a seeding with date, larvae quantity, larva type, source laboratory and responsible person, the system shall reject the record if the quantity exceeds the maximum capacity (RF-02) plus the authorized overload (RF-03); otherwise it shall register the seeding and link it to the pond.\\
+\hline
+RF-06 & While a seeding is active, the system shall record weekly growth samplings (grameos) with date, average weight (g) and observations, associated to the corresponding week of the productive cycle.\\
+\hline
+RF-07 & When the Aquaculture Technician requests the growth history of a pond and cycle, the system shall display 100\% of the registered samplings ordered chronologically as a table and a chart.\\
+\hline
+RF-08 & If the weekly weight gain between two consecutive samplings is lower than 2~g, then the system shall generate a low-growth alert within 24 hours.\\
+\hline
+RF-09 & When a water parameter measurement (pH, dissolved oxygen, temperature, salinity, turbidity or alkalinity) is received manually or via IoT sensor, the system shall store it with timestamp and pond ID without data loss.\\
+\hline
+RF-10 & When a stored water parameter value is outside its configured optimal range, the system shall generate an automatic alert within 60 seconds of detection.\\
+\hline
+RF-11 & While a water alert is active, when the Aquaculture Technician records the corrective action with description, responsible person and date, the system shall change the alert state to ``attended''; the system shall not allow closing an alert without action and responsible person.\\
+\hline
+RF-12 & When a new sampling is registered for a pond with an active seeding, the system shall recompute the suggested daily feed ration as estimated biomass multiplied by the feeding rate of the current growth stage.\\
+\hline
+RF-13 & While a pond has an active seeding, the system shall record the daily feed consumption with feed type, quantity, schedule, pond and responsible person, rejecting incomplete records.\\
+\hline
+RF-14 & When a productive cycle has sufficient feed and biomass data, the system shall generate the Feed Conversion Ratio (FCR) report with a deviation no greater than $\pm0.05$ with respect to a manual control calculation.\\
+\hline
+RF-15 & When the Aquaculture Technician submits a sanitary incident with date, symptoms, diagnosis, treatment and pond, the system shall register the incident in the pond's sanitary history, allowing at least one free-text observation.\\
+\hline
+RF-16 & If the reported mortality of a pond exceeds the configured threshold for its stage, then the system shall alert the Aquaculture Technician within 60 seconds, keeping the alert visible until reviewed.\\
+\hline
+RF-17 & When the Administrator registers an employee with name, unique national ID, position, system role and hire date, the system shall create the employee record and access credentials, rejecting duplicated IDs (RBAC).\\
+\hline
+RF-18 & When a supervisor assigns a daily task to an active employee, the system shall record the assignment and shall reject any completion attempt performed by a user other than the assignee or a supervisor.\\
+\hline
+RF-19 & When a stock movement (input/output) of a catalogued supply is registered, the system shall update the current stock immediately and shall reject outputs that would produce negative stock.\\
+\hline
+RF-20 & If the stock of a critical supply falls below its configured minimum level, then the system shall automatically alert the Warehouse Keeper and the Administrator, keeping the alert active until the stock is replenished.\\
+\hline
+RF-21 & When the Maintenance Supervisor registers a preventive or corrective maintenance order for a catalogued equipment, the system shall track its state (pending / in progress / closed) and record closing date and executor upon completion.\\
+\hline
+RF-22 & While a pond is in ``harvest'' state, when the Administrator submits the harvest with date, total weight and average size, the system shall compute the yield (pounds per hectare) automatically from the total weight and the pond surface.\\
+\hline
+RF-23 & When a harvest is registered and the cycle's feed and supply data are available, the system shall compute the production cost as the sum of feed, supplies and labor, matching a manual control calculation.\\
+\hline
+RF-24 & When the Administrator selects at least two productive cycles with complete data, the system shall generate a comparative report (table/chart) of yield, FCR and cost, exportable to PDF or Excel containing 100\% of the displayed rows and columns.\\
+\hline
+RF-25 & Where at least two complete historical productive cycles are available, when a new sampling is registered, the system shall regenerate the optimal harvest date prediction with its explicit confidence level in the AI panel.\\
+
+\end{longtable}
+
+\subsection{Tabla de atributos de requisitos (RF y RNF)}
+La Tabla~\ref{tab:atributos} consolida los ocho atributos exigidos para el 100\% de los requisitos funcionales y no funcionales. Las fuentes EV-01 (entrevista al administrador), EV-02 (entrevista al técnico acuícola / encuesta) corresponden al catálogo de evidencias del Apéndice~B del SRS.
+
+\begin{landscape}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{1.3cm}|p{6.0cm}|p{1.1cm}|p{1.9cm}|p{2.3cm}|p{2.2cm}|p{1.9cm}|p{1.7cm}|}
+\caption{Tabla de atributos de los requisitos del sistema AquaGest.}
+\label{tab:atributos}\\
+\hline
+\textbf{ID} & \textbf{Descripción} & \textbf{Tipo} & \textbf{MoSCoW} & \textbf{Fuente} & \textbf{Estabilidad} & \textbf{Estado} & \textbf{Verif.\ (S/N)}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{ID} & \textbf{Descripción} & \textbf{Tipo} & \textbf{MoSCoW} & \textbf{Fuente} & \textbf{Estabilidad} & \textbf{Estado} & \textbf{Verif.\ (S/N)}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+RF-01 & Registro de estanque con ID único, superficie y estado & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-02 & Cálculo de capacidad máxima de siembra por superficie & RF & Must & EV-01 & Alta & Validado & S\\
+\hline
+RF-03 & Registro de sobrecarga controlada con justificación & RF & Should & EV-01 & Media & Validado & S\\
+\hline
+RF-04 & Actualización auditada del estado del estanque & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-05 & Registro de siembra con validación de capacidad & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-06 & Registro de grameo semanal por siembra & RF & Must & EV-01 & Alta & Validado & S\\
+\hline
+RF-07 & Historial gráfico de crecimiento por ciclo & RF & Should & EV-01 & Alta & Validado & S\\
+\hline
+RF-08 & Alerta de crecimiento semanal inferior al esperado & RF & Should & EV-01 & Media & Aprobado & S\\
+\hline
+RF-09 & Registro de parámetros del agua (manual e IoT) & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-10 & Alerta automática por parámetro fuera de rango & RF & Must & EV-01/EV-02 & Alta & Validado & S\\
+\hline
+RF-11 & Registro de acción correctiva y cierre de alerta & RF & Should & EV-02 & Alta & Aprobado & S\\
+\hline
+RF-12 & Cálculo de ración diaria según biomasa y etapa & RF & Must & EV-01/EV-02 & Media & Validado & S\\
+\hline
+RF-13 & Registro diario de consumo de alimento & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-14 & Informe de eficiencia alimenticia (FCR) & RF & Should & EV-01 & Media & Aprobado & S\\
+\hline
+RF-15 & Registro de incidente sanitario & RF & Must & EV-01 & Alta & Validado & S\\
+\hline
+RF-16 & Alerta de mortalidad anormal por umbral & RF & Must & EV-01/EV-02 & Alta & Validado & S\\
+\hline
+RF-17 & Registro de empleados con credenciales RBAC & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-18 & Asignación y control de tareas diarias & RF & Should & EV-02 & Media & Aprobado & S\\
+\hline
+RF-19 & Gestión de inventario con stock no negativo & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-20 & Alerta automática de stock mínimo & RF & Should & EV-02 & Alta & Aprobado & S\\
+\hline
+RF-21 & Registro de órdenes de mantenimiento de equipos & RF & Could & EV-02 & Media & Propuesto & S\\
+\hline
+RF-22 & Registro de cosecha con cálculo de rendimiento & RF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RF-23 & Cálculo de costo de producción por cosecha & RF & Should & EV-02 & Media & Aprobado & S\\
+\hline
+RF-24 & Reportes comparativos entre ciclos, exportables & RF & Should & EV-01/EV-02 & Media & Aprobado & S\\
+\hline
+RF-25 & Predicción IA de momento óptimo de cosecha & RF & Could & EV-01 & Baja & Propuesto & S\\
+\hline
+RNF-01 & Registro de parámetro en $\leq 2$~s (p95) con 50 usuarios & RNF & Must & EV-02 & Alta & Validado & S\\
+\hline
+RNF-02 & Disponibilidad mensual $\geq 98\%$ & RNF & Must & EV-01 & Alta & Validado & S\\
+\hline
+RNF-03 & Registro de alimentación en $\leq 3$ pasos y $\leq 60$~s & RNF & Should & EV-02 & Media & Aprobado & S\\
+\hline
+RNF-04 & RBAC y cifrado de contraseñas (bcrypt) & RNF & Must & EV-01 & Alta & Validado & S\\
+\hline
+RNF-05 & Operación offline con sincronización $\geq 95\%$ en 5~min & RNF & Should & EV-02 & Media & Aprobado & S\\
+\hline
+RNF-06 & Compatibilidad Chrome/Firefox v100+ y tablet Android & RNF & Could & EV-02 & Alta & Aprobado & S\\
+\hline
+RNF-07 & Cobertura de pruebas unitarias $\geq 60\%$ en módulos críticos & RNF & Could & Equipo & Media & Propuesto & S\\
+
+\end{longtable}
+\end{landscape}
+\end{document}
