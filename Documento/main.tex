@@ -701,7 +701,13 @@ Se modela el proceso \textbf{Registrar alimentación diaria} (CU-03; RF-12, RF-1
 
 % ============================================================
 \section{Conclusiones}
-La Práctica Experimental N.\textsuperscript{o} 3 ha permitido consolidar un modelo integral del sistema AquaGest mediante: (i) la detección y corrección de siete defectos del SRS inicial, reescribiendo los 25 requisitos funcionales en sintaxis EARS verificable; (ii) la especificación de un modelo de datos normalizado hasta 3FN con 12 entidades y 10 relaciones, transformado a diagrama de clases UML con 14 clases incluidas 2 asociativas; (iii) la modelación funcional con DFD balanceados en tres niveles de abstracción y un DFD esencial que captura la lógica del evento crítico; y (iv) la identificación de placeholder para 6 diagramas que requieren exportación desde la herramienta CASE (Paso 2 y 3). Los pasos 4 y 5 (modelo de comportamiento y trazabilidad) quedan pendientes para integración en la próxima entrega.
+\begin{enumerate}[leftmargin=1.6em]
+  \item La auditoría del SRS contra IEEE/ISO/IEC 29148 permitió detectar y corregir siete defectos (ambigüedad, incompletitud, inconsistencia y no verificabilidad), confirmando empíricamente que la revisión sistemática con criterios de calidad estandarizados eleva la verificabilidad del documento antes del diseño \cite{ieee29148,mendez2021}.
+  \item La reescritura de los 25 requisitos funcionales con las plantillas EARS eliminó la voz de ``capacidad'' (\textit{el sistema debe permitir}) y la sustituyó por comportamientos observables con disparadores, condiciones y respuestas medibles, lo que reduce el espacio de interpretación entre analistas, desarrolladores y evaluadores \cite{mavin2009}.
+  \item El modelado triangulado en tres perspectivas (datos, funcional y comportamiento) demostró ser complementario: el ER en 3FN garantiza integridad de la información, el DFD balanceado garantiza cobertura funcional del alcance, y la máquina de estados formaliza reglas de negocio (capacidad de siembra, cosecha, mantenimiento) que ninguna otra vista expresaba con precisión.
+  \item La matriz de trazabilidad RF~$\times$~modelos alcanzó cobertura total de los requisitos funcionales y actuó como instrumento de control de calidad: permitió detectar un gap real (mantenimiento sin estados), declarar coberturas parciales justificadas y eliminar dos casos de gold plating, evitando esfuerzo de diseño sin respaldo en la elicitación.
+  \item La transformación sistemática ER~$\rightarrow$~UML, con clases asociativas para las relaciones M:N, produce un modelo estructural directamente implementable sobre la arquitectura cliente-servidor con base de datos relacional definida en las restricciones del proyecto (RST-01, RST-05), acortando la distancia entre la especificación de requisitos y el diseño detallado de AquaGest.
+\end{enumerate}
 
 \bibliographystyle{IEEEtran}
 \bibliography{referencias}
