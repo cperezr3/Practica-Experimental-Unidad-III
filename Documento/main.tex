@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[spanish,es-tabla,es-noquoting]{babel}
+\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{longtable}
 \usepackage[margin=2.5cm]{geometry}
@@ -16,8 +17,24 @@
 \usepackage{cite}
 \usepackage[hidelinks,colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
 
+\renewcommand{\_}{\textunderscore\allowbreak}
+\tolerance=2000 \emergencystretch=3em
+
 \captionsetup{font=small,labelfont=bf}
 \setlength{\parskip}{4pt}
+
+% ---------- Comando de figura con placeholder seguro ----------
+\newcommand{\figuraSRS}[4][0.92\textwidth]{%
+\begin{figure}[H]
+\centering
+\IfFileExists{#2}{\includegraphics[width=#1]{#2}}{%
+\fbox{\parbox[c][6.5cm][c]{0.85\textwidth}{\centering
+\textbf{[Insertar Figura: #3]}\\[6pt]
+\small Archivo esperado: \texttt{\detokenize{#2}}\\
+\small (Exportar desde la herramienta CASE en alta resolución)}}}%
+\caption{#3}
+\label{#4}
+\end{figure}}
 
 \begin{document}
 
@@ -133,7 +150,7 @@ D-05 & Varios RF (RF-01, RF-09, RF-15) usan la fórmula ``el sistema debe \texti
 \hline
 D-06 & RF-12: no especifica la fórmula ni la fuente de la tasa de alimentación aplicada sobre la biomasa estimada. & Ambigüedad & Explicitar: ración diaria $=$ biomasa estimada $\times$ tasa de alimentación ($\%$) por etapa, con tabla de tasas por defecto editable.\\
 \hline
-D-07 & RF-25: su precondición (dos ciclos históricos completos) no es satisfacible en la primera versión, por lo que el criterio de verificación no es ejecutable en la entrega inicial. & No verificable (temporalmente) & Declarar verificación en dos fases: fase~1 con \textit{dataset} sintético/da\-tos de otra camaronera; fase~2 con datos propios al completar dos ciclos.\\
+D-07 & RF-25: su precondición (dos ciclos históricos completos) no es satisfacible en la primera versión, por lo que el criterio de verificación no es ejecutable en la entrega inicial. & No verificable (temporalmente) & Declarar verificación en dos fases: fase~1 con \textit{dataset} sintético/datos de otra camaronera; fase~2 con datos propios al completar dos ciclos.\\
 
 \end{longtable}
 
@@ -214,7 +231,7 @@ RF-25 & Where at least two complete historical productive cycles are available, 
 \end{longtable}
 
 \subsection{Tabla de atributos de requisitos (RF y RNF)}
-La Tabla~\ref{tab:atributos} consolida los ocho atributos exigidos para el 100\% de los requisitos funcionales y no funcionales. Las fuentes EV-01 (entrevista al administrador), EV-02 (entrevista al técnico acuícola / encuesta) corresponden al catálogo de evidencias del Apéndice~B del SRS.
+La Tabla~\ref{tab:atributos} consolida los ocho atributos exigidos para el 100\% de los requisitos funcionales y no funcionales.
 
 \begin{landscape}
 \renewcommand{\arraystretch}{1.2}
@@ -304,4 +321,389 @@ RNF-07 & Cobertura de pruebas unitarias $\geq 60\%$ en módulos críticos & RNF 
 
 \end{longtable}
 \end{landscape}
+
+% ============================================================
+\section{Paso 2 --- Modelo de datos: ER y clases UML}
+\subsection{Identificación de entidades}
+A partir de los RF y del diagrama de clases conceptual de la Entrega~1B se consolidan doce entidades principales (Tabla~\ref{tab:entidades}); las claves primarias se subrayan conceptualmente mediante la marca (PK).
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{3.4cm}|p{8.9cm}|p{2.3cm}|}
+\caption{Entidades del modelo de datos con atributos, tipos y restricciones.}
+\label{tab:entidades}\\
+\hline
+\textbf{Entidad} & \textbf{Atributos (tipo; restricción)} & \textbf{Clave primaria} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Entidad} & \textbf{Atributos (tipo; restricción)} & \textbf{Clave primaria} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+ESTANQUE &
+idEstanque (PK, VARCHAR(10); único, no nulo), nombre (VARCHAR(50); no nulo), superficieHa (DECIMAL(6,2); $>0$), capacidadMaxLarvas (INTEGER; derivado RF-02), estado (ENUM\{activo, preparación, cosecha, inactivo\}; no nulo)
+& idEstanque \\
+\hline
+
+SIEMBRA &
+idSiembra (PK, SERIAL), fechaInicio (DATE; no nulo), cantidadLarvas (INTEGER; $\leq$ capacidad + sobrecarga), tipoLarva (VARCHAR(30)), laboratorioOrigen (VARCHAR(60)), responsable (VARCHAR(60)), sobrecargaLb (DECIMAL(7,2); 1000--2000 o nulo), idEstanque (FK; no nulo)
+& idSiembra \\
+\hline
+
+GRAMEO &
+idGrameo (PK, SERIAL), fecha (DATE; no nulo), pesoPromedioG (DECIMAL(6,2); $>0$), semanaCiclo (INTEGER; $\geq1$), observaciones (TEXT), idSiembra (FK; no nulo)
+& idGrameo \\
+\hline
+
+PARAMETRO\_AGUA &
+idParametro (PK, SERIAL), fechaHora (TIMESTAMP; no nulo), tipo (ENUM\{pH, oxígeno, temperatura, salinidad, turbidez, alcalinidad\}), valor (DECIMAL(8,3); no nulo), origen (ENUM\{manual, IoT\}), idEstanque (FK)
+& idParametro \\
+\hline
+
+ALERTA &
+idAlerta (PK, SERIAL), tipo (ENUM\{agua, crecimiento, mortalidad, stock\}), fechaHora (TIMESTAMP), estado (ENUM\{activa, atendida\}), accionCorrectiva (TEXT; obligatoria al cerrar), idParametro (FK; nulo si no aplica), idEstanque (FK)
+& idAlerta \\
+\hline
+
+REGISTRO\_ALIMENTACION &
+idRegAlim (PK, SERIAL), fecha (DATE; no nulo), tipoBalanceado (VARCHAR(40)), cantidadKg (DECIMAL(8,2); $>0$), horario (TIME), idSiembra (FK), idEmpleado (FK responsable)
+& idRegAlim \\
+\hline
+
+INCIDENTE\_SANITARIO &
+idIncidente (PK, SERIAL), fecha (DATE), sintomas (TEXT; no nulo), diagnostico (VARCHAR(120)), tratamiento (TEXT), idSiembra (FK)
+& idIncidente \\
+\hline
+
+EMPLEADO &
+idEmpleado (PK, SERIAL), cedula (VARCHAR(10); única, no nula), nombre (VARCHAR(80)), cargo (VARCHAR(40)), rolSistema (ENUM\{admin, técnico, operario, bodeguero, supervisor\}), fechaIngreso (DATE)
+& idEmpleado \\
+\hline
+
+TAREA\_DIARIA &
+idTarea (PK, SERIAL), descripcion (VARCHAR(160); no nulo), area (VARCHAR(40)), fecha (DATE), estadoCumplimiento (ENUM\{pendiente, completada\})
+& idTarea \\
+\hline
+
+INSUMO &
+idInsumo (PK, VARCHAR(12) SKU), nombre (VARCHAR(60)), categoria (ENUM\{balanceado, medicina, herramienta, repuesto, combustible\}), stockActual (DECIMAL(10,2); $\geq0$), stockMinimo (DECIMAL(10,2))
+& idInsumo \\
+\hline
+
+ORDEN\_MANTENIMIENTO &
+idOrden (PK, SERIAL), equipo (VARCHAR(60); catálogo), tipo (ENUM\{preventivo, correctivo\}), fecha (DATE), estado (ENUM\{pendiente, en proceso, concluida\}), fechaCierre (DATE; nula hasta cierre), idEmpleado (FK supervisor)
+& idOrden \\
+\hline
+
+COSECHA &
+idCosecha (PK, SERIAL), fecha (DATE), pesoTotalLb (DECIMAL(10,2); $>0$), tallaPromedioG (DECIMAL(6,2)), rendimientoLbHa (DECIMAL(8,2); derivado RF-22), costoProduccion (DECIMAL(10,2); derivado RF-23), idSiembra (FK; única --- 1 cosecha por siembra)
+& idCosecha \\
+
+\end{longtable}
+
+\subsection{Relaciones, cardinalidad y participación}
+La Tabla~\ref{tab:relaciones} define las relaciones del modelo. Se incluyen \textbf{dos relaciones M:N}: \textsc{asignación} (EMPLEADO--TAREA\_DIARIA) y \textsc{consumo} (ORDEN\_MANTENIMIENTO--INSUMO), que en el diagrama ER se resuelven con entidades asociativas.
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{3.7cm}|p{2.5cm}|p{3.1cm}|p{4.9cm}|}
+\caption{Relaciones del modelo ER con cardinalidad y participación.}
+\label{tab:relaciones}\\
+\hline
+\textbf{Relación} & \textbf{Cardinalidad} & \textbf{Participación} & \textbf{Descripción}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Relación} & \textbf{Cardinalidad} & \textbf{Participación} & \textbf{Descripción}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+ESTANQUE \textsc{acumula} SIEMBRA &
+1 : 0..* &
+Parcial / Total &
+Un estanque acumula múltiples siembras (ciclos sucesivos); toda siembra pertenece a un estanque.\\
+\hline
+
+SIEMBRA \textsc{registra} GRAMEO &
+1 : 0..* &
+Parcial / Total &
+Cada siembra tiene mediciones semanales de peso.\\
+\hline
+
+ESTANQUE \textsc{monitorea} PARAMETRO\_AGUA &
+1 : 0..* &
+Parcial / Total &
+Cada estanque recibe mediciones continuas.\\
+\hline
+
+PARAMETRO\_AGUA \textsc{genera} ALERTA &
+0..1 : 0..1 &
+Parcial / Parcial &
+Una medición genera como máximo una alerta.\\
+\hline
+
+SIEMBRA \textsc{consume} REGISTRO\_ALIMENTACION &
+1 : 0..* &
+Parcial / Total &
+Consumo diario de alimento por siembra.\\
+\hline
+
+SIEMBRA \textsc{presenta} INCIDENTE\_SANITARIO &
+1 : 0..* &
+Parcial / Total &
+Historial sanitario del ciclo.\\
+\hline
+
+SIEMBRA \textsc{culmina en} COSECHA &
+1 : 0..1 &
+Parcial / Total &
+Cada siembra culmina en, a lo sumo, una cosecha.\\
+\hline
+
+EMPLEADO \textsc{atiende} ALERTA &
+1 : 0..* &
+Parcial / Parcial &
+Un empleado puede atender varias alertas.\\
+\hline
+
+\textbf{EMPLEADO \textsc{asignación} TAREA\_DIARIA} &
+\textbf{M : N} &
+Total / Total &
+Un empleado recibe varias tareas y una tarea puede reasignarse o compartirse entre empleados; la entidad asociativa \textsc{ASIGNACION\_TAREA} guarda fechaAsignacion y estadoCumplimiento individual (RF-18).\\
+\hline
+
+\textbf{ORDEN\_MANT.\ \textsc{consumo} INSUMO} &
+\textbf{M : N} &
+Parcial / Parcial &
+Una orden de mantenimiento consume varios insumos (repuestos, combustible) y un insumo se usa en varias órdenes; la asociativa \textsc{CONSUMO\_INSUMO} guarda cantidadUsada y fecha (RF-19, RF-21).\\
+
+\end{longtable}
+
+\subsection{Diagrama ER en notación Crow's Foot}
+\figuraSRS{figuras/er_crowsfoot.png}{Diagrama Entidad--Relación del sistema AquaGest en notación Crow's Foot}{fig:er}
+
+\subsection{Verificación de normalización hasta 3FN}
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{1FN:} todos los atributos son atómicos; los grupos repetitivos (mediciones, grameos, movimientos) se extrajeron a entidades propias con clave primaria simple, y las relaciones M:N se resolvieron con entidades asociativas.
+  \item \textbf{2FN:} las claves primarias son simples (SERIAL/código), por lo que no existen dependencias parciales; en las asociativas \textsc{ASIGNACION\_TAREA}(idEmpleado, idTarea) y \textsc{CONSUMO\_INSUMO}(idOrden, idInsumo) los atributos propios (fechaAsignacion, estadoCumplimiento, cantidadUsada) dependen de la clave compuesta completa.
+  \item \textbf{3FN:} no hay dependencias transitivas: \textit{capacidadMaxLarvas} y \textit{rendimientoLbHa} se documentan como atributos \textbf{derivados} (calculados por RF-02 y RF-22, no almacenados de forma redundante); los datos del laboratorio de origen se mantienen como texto descriptivo de la siembra y, de requerirse gestión propia, se extraerían a una entidad \textsc{LABORATORIO} sin afectar la 3FN del resto del modelo.
+\end{itemize}
+
+\subsection{Transformación a diagrama de clases UML}
+Cada entidad se transforma en una clase con visibilidades y tipos; las relaciones M:N se transforman en las \textbf{clases asociativas} \texttt{AsignacionTarea} y \texttt{ConsumoInsumo}. La Tabla~\ref{tab:clases} documenta atributos y un mínimo de dos operaciones por clase.
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{3.9cm}|p{5.1cm}|p{5.5cm}|}
+\caption{Clases UML: atributos (visibilidad y tipo) y operaciones.}
+\label{tab:clases}\\
+\hline
+\textbf{Clase} & \textbf{Atributos} & \textbf{Operaciones}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Clase} & \textbf{Atributos} & \textbf{Operaciones}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Estanque &
+$-$id: String; $-$nombre: String; $-$superficieHa: Decimal; $-$estado: EstadoEstanque &
+$+$calcularCapacidadMax(): Integer; $+$cambiarEstado(nuevo: EstadoEstanque, usuario: Empleado): void; $+$obtenerSiembraActiva(): Siembra\\
+\hline
+
+Siembra &
+$-$id: Integer; $-$fechaInicio: Date; $-$cantidadLarvas: Integer; $-$tipoLarva: String; $-$laboratorioOrigen: String; $-$sobrecargaLb: Decimal &
+$+$validarCapacidad(cap: Integer): Boolean; $+$registrarGrameo(g: Grameo): void; $+$estimarBiomasa(): Decimal\\
+\hline
+
+Grameo &
+$-$id: Integer; $-$fecha: Date; $-$pesoPromedioG: Decimal; $-$semanaCiclo: Integer &
+$+$calcularGananciaSemanal(prev: Grameo): Decimal; $+$esCrecimientoBajo(): Boolean\\
+\hline
+
+ParametroAgua &
+$-$id: Integer; $-$fechaHora: DateTime; $-$tipo: TipoParametro; $-$valor: Decimal; $-$origen: OrigenDato &
+$+$estaFueraDeRango(r: RangoOptimo): Boolean; $+$registrar(): void\\
+\hline
+
+Alerta &
+$-$id: Integer; $-$tipo: TipoAlerta; $-$fechaHora: DateTime; $-$estado: EstadoAlerta; $\#$accionCorrectiva: String &
+$+$activar(): void; $+$cerrar(accion: String, resp: Empleado): void; $+$notificar(rol: RolSistema): void\\
+\hline
+
+RegistroAlimentacion &
+$-$id: Integer; $-$fecha: Date; $-$tipoBalanceado: String; $-$cantidadKg: Decimal; $-$horario: Time &
+$+$validarCampos(): Boolean; $+$acumularConsumoCiclo(): Decimal\\
+\hline
+
+IncidenteSanitario &
+$-$id: Integer; $-$fecha: Date; $-$sintomas: String; $-$diagnostico: String; $-$tratamiento: String &
+$+$registrar(): void; $+$adjuntarObservacion(txt: String): void\\
+\hline
+
+Empleado &
+$-$id: Integer; $-$cedula: String; $-$nombre: String; $-$cargo: String; $-$rolSistema: RolSistema &
+$+$autenticar(clave: String): Boolean; $+$tienePermiso(modulo: String): Boolean\\
+\hline
+
+TareaDiaria &
+$-$id: Integer; $-$descripcion: String; $-$area: String; $-$fecha: Date &
+$+$asignarA(e: Empleado): AsignacionTarea; $+$consultarEstado(): EstadoTarea\\
+\hline
+
+\textbf{AsignacionTarea} (asociativa) &
+$-$fechaAsignacion: Date; $-$estadoCumplimiento: EstadoTarea &
+$+$marcarCompletada(u: Empleado): Boolean \{solo asignado o supervisor\}; $+$registrarCumplimiento(): void\\
+\hline
+
+Insumo &
+$-$sku: String; $-$nombre: String; $-$categoria: CategoriaInsumo; $-$stockActual: Decimal; $-$stockMinimo: Decimal &
+$+$registrarMovimiento(tipo: TipoMov, cant: Decimal): Boolean; $+$estaEnStockMinimo(): Boolean\\
+\hline
+
+OrdenMantenimiento &
+$-$id: Integer; $-$equipo: String; $-$tipo: TipoMant; $-$estado: EstadoOrden; $-$fechaCierre: Date &
+$+$iniciar(): void; $+$cerrar(ejecutor: Empleado): void\\
+\hline
+
+\textbf{ConsumoInsumo} (asociativa) &
+$-$cantidadUsada: Decimal; $-$fecha: Date &
+$+$descontarStock(): Boolean; $+$calcularCostoConsumo(): Decimal\\
+\hline
+
+Cosecha &
+$-$id: Integer; $-$fecha: Date; $-$pesoTotalLb: Decimal; $-$tallaPromedioG: Decimal &
+$+$calcularRendimiento(sup: Decimal): Decimal; $+$calcularCostoProduccion(): Decimal\\
+
+\end{longtable}
+
+\figuraSRS{figuras/clases_uml.png}{Diagrama de clases UML del sistema AquaGest (con clases asociativas para las relaciones M:N)}{fig:clases}
+
+% ============================================================
+\section{Paso 3 --- Modelo funcional}
+\subsection{DFD Nivel 0 (diagrama de contexto)}
+El proceso central \textbf{P0 --- Gestionar operación de la camaronera (AquaGest)} interactúa con siete entidades externas: Administrador, Técnico Acuícola, Operario de Producción, Bodeguero, Supervisor de Mantenimiento, Sensores IoT y Módulo de IA. Los flujos principales son: registro de actividades y datos operativos (entrada desde los roles), lecturas en tiempo real (entrada desde sensores IoT), datos históricos (salida hacia el Módulo IA) y predicciones (entrada desde el Módulo IA), y reportes, alertas y órdenes de trabajo (salidas hacia los roles). Este diagrama conserva y refina el Diagrama de Contexto ya elaborado en la Entrega~1B (Figura~1 del SRS).
+
+\figuraSRS{figuras/dfd_nivel0.png}{DFD Nivel 0 --- proceso central, entidades externas y flujos de datos}{fig:dfd0}
+
+\subsection{DFD Nivel 1}
+El proceso P0 se descompone en \textbf{siete subprocesos} y nueve almacenes (Tabla~\ref{tab:dfd1}); el balanceo con el Nivel~0 se verifica en la Tabla~\ref{tab:balanceo}.
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{4.7cm}|p{4.7cm}|p{4.4cm}|}
+\caption{Subprocesos y almacenes del DFD Nivel 1.}
+\label{tab:dfd1}\\
+\hline
+\textbf{Subproceso} & \textbf{Entradas / salidas principales} & \textbf{Almacenes que usa}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Subproceso} & \textbf{Entradas / salidas principales} & \textbf{Almacenes que usa}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+P1 Gestionar estanques y siembras (RF-01..RF-05) & Datos de estanque/siembra $\rightarrow$ confirmaciones, validación de capacidad & D1 Estanques, D2 Siembras\\
+\hline
+P2 Monitorear parámetros del agua (RF-09..RF-11) & Lecturas IoT y manuales $\rightarrow$ alertas de agua, cierre de acción correctiva & D3 Parámetros, D4 Alertas\\
+\hline
+P3 Gestionar alimentación y crecimiento (RF-06..RF-08, RF-12..RF-14) & Grameos y consumos $\rightarrow$ ración sugerida, alerta de crecimiento, informe FCR & D2 Siembras, D5 Alimentación, D4 Alertas\\
+\hline
+P4 Gestionar sanidad (RF-15, RF-16) & Incidentes y mortalidad $\rightarrow$ historial sanitario, alerta de mortalidad & D6 Sanidad, D4 Alertas\\
+\hline
+P5 Gestionar personal y tareas (RF-17, RF-18) & Datos de empleado, asignaciones $\rightarrow$ credenciales, estado de cumplimiento & D7 Empleados\\
+\hline
+P6 Gestionar inventario y mantenimiento (RF-19..RF-21) & Movimientos de insumos, órdenes $\rightarrow$ stock actualizado, alerta de stock, orden cerrada & D8 Inventario, D4 Alertas\\
+\hline
+P7 Gestionar cosechas, reportes y predicción (RF-22..RF-25) & Datos de cosecha, selección de ciclos $\rightarrow$ rendimiento, costo, reporte comparativo, predicción IA & D2 Siembras, D5 Alimentación, D8 Inventario, D9 Cosechas\\
+
+\end{longtable}
+
+\figuraSRS{figuras/dfd_nivel1.png}{DFD Nivel 1 --- descomposición de P0 en siete subprocesos y nueve almacenes}{fig:dfd1}
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{6.1cm}|p{3.0cm}|p{4.2cm}|}
+\caption{Verificación de balanceo entre Nivel 0 y Nivel 1.}
+\label{tab:balanceo}\\
+\hline
+\textbf{Flujo en Nivel 0} & \textbf{Dirección} & \textbf{Aparece en Nivel 1 en}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Flujo en Nivel 0} & \textbf{Dirección} & \textbf{Aparece en Nivel 1 en}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Registro de actividades (roles de campo) & Entrada & P1, P3, P4, P6\\
+\hline
+Parámetros de control y gestión de inventario (gestión) & Entrada & P1, P5, P6\\
+\hline
+Lecturas en tiempo real (Sensores IoT) & Entrada & P2\\
+\hline
+Predicciones de calidad/cosecha (Módulo IA) & Entrada & P7\\
+\hline
+Datos históricos y variables actuales & Salida & P7 $\rightarrow$ Módulo IA\\
+\hline
+Alertas críticas y órdenes de trabajo & Salida & P2, P3, P4, P6\\
+\hline
+Reportes de producción y comparativos & Salida & P7\\
+
+\end{longtable}
+
+\noindent Todos los flujos externos del Nivel~0 aparecen exactamente una vez o distribuidos de forma consistente en el Nivel~1, sin flujos huérfanos ni nuevos flujos externos: \textbf{el modelo está balanceado}.
+
+\subsection{DFD esencial}
+El DFD esencial modela la respuesta lógica ideal al evento de negocio más crítico identificado en la elicitación (EV-01, EV-02): \textit{``llega una medición de parámetro de agua''}. La respuesta esencial, independiente de la tecnología, es: (1)~validar coherencia física del valor; (2)~almacenar la medición; (3)~comparar contra el rango óptimo vigente; (4)~si está fuera de rango, emitir alerta y esperar acción correctiva; (5)~archivar la medición y la acción para el análisis histórico y la predicción. Esta esencia agrupa RF-09, RF-10 y RF-11 y es neutral respecto a si el dato proviene de un sensor IoT o de un registro manual.
+
+\figuraSRS{figuras/dfd_esencial.png}{DFD esencial --- respuesta lógica al evento ``llega una medición de parámetro de agua''}{fig:dfdes}
+
+\subsection{Diagrama de actividades UML}
+Se modela el proceso \textbf{Registrar alimentación diaria} (CU-03; RF-12, RF-13, RF-19) con tres \textit{swimlanes}: Operario de Producción, Sistema AquaGest y Bodeguero. El flujo incluye: decisión \textit{[¿existe grameo previo?]} (con ración sugerida o registro manual), un \textbf{fork} que paraleliza el registro del consumo y el descuento de stock del balanceado, un \textbf{join} de sincronización previo a la confirmación, y el \textbf{flujo de objeto} \texttt{RegistroAlimentacion} que transita por los estados [propuesto] $\rightarrow$ [validado] $\rightarrow$ [persistido].
+
+\figuraSRS{figuras/actividades_uml.png}{Diagrama de actividades UML --- Registrar alimentación diaria (swimlanes, decisión, fork/join y flujo de objetos)}{fig:actividades}
+
+% ============================================================
+\section{Conclusiones}
+La Práctica Experimental N.\textsuperscript{o} 3 ha permitido consolidar un modelo integral del sistema AquaGest mediante: (i) la detección y corrección de siete defectos del SRS inicial, reescribiendo los 25 requisitos funcionales en sintaxis EARS verificable; (ii) la especificación de un modelo de datos normalizado hasta 3FN con 12 entidades y 10 relaciones, transformado a diagrama de clases UML con 14 clases incluidas 2 asociativas; (iii) la modelación funcional con DFD balanceados en tres niveles de abstracción y un DFD esencial que captura la lógica del evento crítico; y (iv) la identificación de placeholder para 6 diagramas que requieren exportación desde la herramienta CASE (Paso 2 y 3). Los pasos 4 y 5 (modelo de comportamiento y trazabilidad) quedan pendientes para integración en la próxima entrega.
+
+\bibliographystyle{IEEEtran}
+\bibliography{referencias}
+
 \end{document}
