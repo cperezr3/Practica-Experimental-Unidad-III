@@ -699,6 +699,172 @@ Se modela el proceso \textbf{Registrar alimentación diaria} (CU-03; RF-12, RF-1
 
 \figuraSRS{figuras/actividades_uml.png}{Diagrama de actividades UML --- Registrar alimentación diaria (swimlanes, decisión, fork/join y flujo de objetos)}{fig:actividades}
 
+
+% ============================================================
+\section{Paso 4 --- Modelo de comportamiento}
+\subsection{Máquina de estados UML: ciclo de vida del Estanque}
+La instancia modelada es \texttt{Estanque}, cuyo ciclo de vida gobierna las validaciones de RF-04, RF-05 y RF-22. La máquina posee \textbf{cinco estados principales} ---uno de ellos compuesto, con tres subestados, para un total de ocho estados--- y transiciones con la sintaxis \textit{evento[condición]/acción}:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Inactivo} $\rightarrow$ \textbf{EnPreparación}: \textit{iniciarPreparacion [orden autorizada] / registrarAuditoria}.
+  \item \textbf{EnPreparación} $\rightarrow$ \textbf{Activo}: \textit{registrarSiembra [cantidad $\leq$ capacidad + sobrecarga] / crearSiembra, notificarTecnico}.
+  \item \textbf{Activo} (estado \textbf{compuesto}) con subestados secuenciales:
+  \begin{itemize}
+    \item \textit{Aclimatación} $\rightarrow$ \textit{Engorde}: \textit{registrarGrameo [semanaCiclo $\geq$ 2] / actualizarBiomasa};
+    \item \textit{Engorde} $\rightarrow$ \textit{ListoParaCosecha}: \textit{registrarGrameo [pesoPromedio $\geq$ tallaObjetivo] / sugerirCosecha (RF-25)};
+    \item transición interna en \textit{Engorde}: \textit{recibirParametro [fueraDeRango] / generarAlerta (RF-10)}.
+  \end{itemize}
+  \item \textbf{Activo} $\rightarrow$ \textbf{EnCosecha}: \textit{autorizarCosecha [subestado = ListoParaCosecha] / bloquearNuevasSiembras}.
+  \item \textbf{EnCosecha} $\rightarrow$ \textbf{Inactivo}: \textit{registrarCosecha [pesoTotal $>$ 0] / calcularRendimiento, calcularCosto, cerrarSiembra}.
+  \item \textbf{EnCosecha} $\rightarrow$ \textbf{EnPreparación}: \textit{prepararNuevoCiclo [cosecha registrada] / limpiarEstanque}.
+  \item \textbf{Activo} $\rightarrow$ \textbf{EnMantenimiento}: \textit{reportarFalla [equipo crítico] / crearOrdenMantenimiento (RF-21)}; retorno \textbf{EnMantenimiento} $\rightarrow$ \textbf{Activo}: \textit{cerrarOrden [estado = concluida] / registrarHistorial}.
+\end{itemize}
+
+\figuraSRS{figuras/estados_uml.png}{Máquina de estados UML del Estanque, con estado compuesto \textit{Activo} y sus subestados}{fig:estados}
+
+\subsection{Diagrama de secuencia: Registrar Parámetros del Agua (CU-02)}
+El escenario integra \textbf{cinco líneas de vida}: \texttt{sensor:SensorIoT} (actor), \texttt{:ControladorMonitoreo}, \texttt{:ParametroAgua}, \texttt{:GestorAlertas} y \texttt{:RepositorioBD}. La interacción incluye los dos fragmentos combinados exigidos:
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item Fragmento \textbf{\texttt{loop}} \textit{[cada 15 minutos, mientras el estanque esté activo]}: el sensor envía \texttt{enviarLectura(tipo, valor, ts)} (mensaje asíncrono) al \texttt{ControladorMonitoreo}, que invoca síncronamente \texttt{validarCoherencia(valor)} y \texttt{crear(lectura)} sobre \texttt{ParametroAgua}, persistiendo mediante \texttt{guardar()} en \texttt{RepositorioBD} (retorno \texttt{ok}).
+  \item Fragmento \textbf{\texttt{alt}}:
+  \begin{itemize}
+    \item \textit{[valor fuera de rango óptimo]}: \texttt{ControladorMonitoreo} $\rightarrow$ \texttt{GestorAlertas}: \texttt{generarAlerta(parametro)} (síncrono); \texttt{GestorAlertas} $\rightarrow$ \texttt{RepositorioBD}: \texttt{registrarAlerta()}; \texttt{GestorAlertas} \texttt{-{}-\textgreater} Técnico Acuícola: \texttt{notificar()} (asíncrono, RF-10, $\leq 60$~s).
+    \item \textit{[valor dentro de rango]}: \texttt{ControladorMonitoreo} retorna \texttt{registroConfirmado} sin generar alerta.
+  \end{itemize}
+\end{enumerate}
+
+\figuraSRS{figuras/secuencia_uml.png}{Diagrama de secuencia UML --- CU-02 Registrar Parámetros del Agua, con fragmentos \texttt{loop} y \texttt{alt}}{fig:secuencia}
+
+% ============================================================
+\section{Paso 5 --- Trazabilidad y coherencia entre modelos}
+\subsection{Matriz de trazabilidad RF $\times$ modelos}
+La Tabla~\ref{tab:trazabilidad} traza el 100\% de los RF contra casos de uso, clases, subprocesos DFD, actividades y estados.
+
+\begin{landscape}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{1.2cm}|p{4.0cm}|p{4.6cm}|p{1.6cm}|p{3.9cm}|p{4.2cm}|}
+\caption{Matriz de trazabilidad RF $\times$ CU $\times$ Clases $\times$ DFD $\times$ Actividades $\times$ Estados.}
+\label{tab:trazabilidad}\\
+\hline
+\textbf{RF} & \textbf{Caso de uso} & \textbf{Clases} & \textbf{DFD} & \textbf{Actividad} & \textbf{Estados (transición)}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{RF} & \textbf{Caso de uso} & \textbf{Clases} & \textbf{DFD} & \textbf{Actividad} & \textbf{Estados (transición)}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+RF-01 & Registrar Estanque & Estanque & P1 & Alta de estanque & Estado inicial Inactivo\\
+\hline
+RF-02 & Registrar Estanque & Estanque & P1 & Alta de estanque & Guarda [cantidad $\leq$ capacidad]\\
+\hline
+RF-03 & Registrar Estanque & Siembra & P1 & Registrar siembra & Guarda [\ldots + sobrecarga]\\
+\hline
+RF-04 & Actualizar Estado de Estanque & Estanque, Empleado & P1 & --- & Todas las transiciones del Estanque\\
+\hline
+RF-05 & CU-01 Registrar Siembra & Siembra, Estanque & P1 & Registrar siembra & EnPreparación $\rightarrow$ Activo\\
+\hline
+RF-06 & CU-01 / Registrar Grameo & Grameo, Siembra & P3 & Registrar grameo & Aclimatación $\rightarrow$ Engorde\\
+\hline
+RF-07 & Registrar Grameo & Grameo & P3 & Consultar historial & (consulta; sin transición)\\
+\hline
+RF-08 & Registrar Grameo & Grameo, Alerta & P3 & Registrar grameo & Transición interna en Engorde\\
+\hline
+RF-09 & CU-02 Registrar Parámetros & ParametroAgua & P2 & --- (secuencia CU-02) & Transición interna en Activo\\
+\hline
+RF-10 & CU-02 Registrar Parámetros & ParametroAgua, Alerta & P2 & --- (secuencia CU-02) & recibirParametro\allowbreak[fueraDeRango]\allowbreak/generarAlerta\\
+\hline
+RF-11 & Gestionar Alerta de Agua & Alerta, Empleado & P2 & --- (secuencia CU-02) & Alerta: activa $\rightarrow$ atendida\\
+\hline
+RF-12 & Calcular Ración Diaria & Siembra, RegistroAlimentacion & P3 & Registrar alimentación (decisión) & (en subestado Engorde)\\
+\hline
+RF-13 & CU-03 Registrar Alimentación & RegistroAlimentacion, Empleado & P3 & Registrar alimentación (fork/join) & (en subestado Engorde)\\
+\hline
+RF-14 & Calcular Ración Diaria & RegistroAlimentacion, Cosecha & P3 & Generar informe FCR & (consulta; sin transición)\\
+\hline
+RF-15 & Registrar Incidente Sanitario & IncidenteSanitario & P4 & Registrar incidente & (en estado Activo)\\
+\hline
+RF-16 & Registrar Incidente Sanitario & IncidenteSanitario, Alerta & P4 & Registrar incidente & Transición interna en Activo\\
+\hline
+RF-17 & Registrar Empleado & Empleado & P5 & Alta de empleado & ---\\
+\hline
+RF-18 & Asignar Tarea Diaria & TareaDiaria, AsignacionTarea, Empleado & P5 & Asignar tarea & AsignacionTarea: pendiente $\rightarrow$ completada\\
+\hline
+RF-19 & Gestionar Inventario de Insumos & Insumo & P6 & Registrar alimentación (rama Bodeguero) & ---\\
+\hline
+RF-20 & Gestionar Inventario de Insumos & Insumo, Alerta & P6 & Descuento de stock & ---\\
+\hline
+RF-21 & Registrar Orden de Mantenimiento & OrdenMantenimiento, ConsumoInsumo & P6 & --- & Activo $\leftrightarrow$ EnMantenimiento\\
+\hline
+RF-22 & CU-04 Registrar Cosecha & Cosecha, Estanque & P7 & Registrar cosecha & EnCosecha $\rightarrow$ Inactivo\\
+\hline
+RF-23 & CU-04 Registrar Cosecha & Cosecha, RegistroAlimentacion, ConsumoInsumo & P7 & Registrar cosecha & EnCosecha $\rightarrow$ Inactivo /calcularCosto\\
+\hline
+RF-24 & Generar Reporte Comparativo & Cosecha, Siembra & P7 & Generar reporte & (consulta; sin transición)\\
+\hline
+RF-25 & CU-05 Generar Predicción & Grameo, ParametroAgua, Cosecha & P7 & --- & Engorde $\rightarrow$ ListoParaCosecha /sugerirCosecha\\
+
+\end{longtable}
+\end{landscape}
+
+\subsection{Gaps y gold plating detectados}
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Gap G-01 (detectado y resuelto):} en la primera versión de la matriz, RF-21 (mantenimiento) carecía de cobertura en la máquina de estados; se resolvió incorporando el estado \textbf{EnMantenimiento} y sus transiciones al modelo de comportamiento.
+  \item \textbf{Gap G-02 (declarado):} RF-17 y RF-24 no tienen representación en el diagrama de actividades ni transiciones de estado propias; se trata de funciones administrativas/consultivas cuya cobertura queda en CU, clases y DFD, lo cual se documenta como cobertura parcial aceptada para esta versión.
+  \item \textbf{Gold plating GP-01:} el borrador del diagrama de clases incluía una clase \texttt{PrediccionIA} con historial versionado de predicciones y nivel de confianza por versión; RF-25 solo exige mantener la predicción vigente. El versionado histórico no responde a ningún RF y se retiró del modelo final (se conserva como propuesta de mejora para la siguiente fase).
+  \item \textbf{Gold plating GP-02:} el DFD Nivel 1 preliminar contenía un subproceso ``Generar respaldos automáticos'' sin RF ni RNF de origen; se eliminó del modelo funcional y se remite a decisiones de infraestructura fuera del alcance del SRS.
+\end{itemize}
+
+\subsection{Verificaciones cruzadas entre perspectivas}
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{ER $\leftrightarrow$ Clases:} las 12 entidades del ER corresponden 1:1 con clases UML; las dos relaciones M:N del ER (\textsc{asignación} y \textsc{consumo}) aparecen como las clases asociativas \texttt{AsignacionTarea} y \texttt{ConsumoInsumo}, con los mismos atributos propios. \textit{Consistencia verificada.}
+  \item \textbf{Clases $\leftrightarrow$ DFD:} los nueve almacenes del Nivel 1 (D1--D9) corresponden a clases persistentes del diagrama de clases (Estanque, Siembra, ParametroAgua, Alerta, RegistroAlimentacion, IncidenteSanitario, Empleado, Insumo/OrdenMantenimiento, Cosecha); ningún almacén carece de clase y ninguna clase persistente carece de almacén. \textit{Consistencia verificada.}
+  \item \textbf{Estados $\leftrightarrow$ Actividades:} las acciones de las transiciones del Estanque (crearSiembra, generarAlerta, calcularRendimiento, descontar stock) aparecen como acciones en el diagrama de actividades o en la secuencia CU-02; el flujo de objeto \texttt{RegistroAlimentacion} transita estados coherentes con las postcondiciones de CU-03. \textit{Consistencia verificada.}
+  \item \textbf{DFD $\leftrightarrow$ RF:} cada subproceso P1--P7 agrupa un subconjunto disjunto y completo de los 25 RF (columna DFD de la Tabla~\ref{tab:trazabilidad}), garantizando que el modelo funcional cubre el 100\% del alcance funcional. \textit{Consistencia verificada.}
+\end{enumerate}
+
+\subsection{Tabla comparativa de perspectivas de modelado}
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{2.8cm}|p{2.9cm}|p{4.0cm}|p{3.9cm}|}
+\caption{Comparación de las perspectivas de modelado empleadas.}
+\label{tab:comparativa}\\
+\hline
+\textbf{Perspectiva} & \textbf{Notación} & \textbf{Utilidad} & \textbf{Limitaciones}\\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Perspectiva} & \textbf{Notación} & \textbf{Utilidad} & \textbf{Limitaciones}\\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Datos & ER Crow's Foot & Define la estructura persistente, integridad referencial y base para la normalización y el diseño físico de la BD relacional (RST-01). & No expresa comportamiento ni orden temporal; los atributos derivados requieren documentación externa.\\
+\hline
+Estructural orientada a objetos & Diagrama de clases UML & Puente entre requisitos y diseño OO; añade operaciones, visibilidades y clases asociativas reutilizables en el código. & Nivel conceptual: no captura interacción en el tiempo ni flujo de trabajo entre roles.\\
+\hline
+Funcional & DFD (Niveles 0, 1 y esencial) & Muestra qué hace el sistema y por dónde fluyen los datos; el balanceo detecta omisiones de alcance; el DFD esencial abstrae la tecnología. & No modela control ni sincronización; no distingue actores concurrentes ni estados de las entidades.\\
+\hline
+Comportamiento & Máquina de estados y secuencia UML & Precisa el ciclo de vida del Estanque (validaciones de RF-04/05/22) y la coordinación temporal del monitoreo (RF-09/10/11) con condiciones y acciones verificables. & Explosión de estados si se modelan todas las entidades; la secuencia cubre un escenario a la vez.\\
+
+\end{longtable}
+
 % ============================================================
 \section{Conclusiones}
 \begin{enumerate}[leftmargin=1.6em]
