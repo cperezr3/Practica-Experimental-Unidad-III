@@ -1,0 +1,100 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Secuencia_CU02" id="seq1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1050" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Cabeceras de lineas de vida -->
+        <mxCell id="h1" value="sensor : SensorIoT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="160" height="40" as="geometry" /></mxCell>
+        <mxCell id="h2" value=":ControladorMonitoreo" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="180" height="40" as="geometry" /></mxCell>
+        <mxCell id="h3" value=":ParametroAgua" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="580" y="20" width="160" height="40" as="geometry" /></mxCell>
+        <mxCell id="h4" value=":GestorAlertas" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="840" y="20" width="160" height="40" as="geometry" /></mxCell>
+        <mxCell id="h5" value=":RepositorioBD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="20" width="160" height="40" as="geometry" /></mxCell>
+        <mxCell id="h6" value="Técnico Acuícola" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="20" width="150" height="40" as="geometry" /></mxCell>
+
+        <!-- Lineas de vida (dashed) -->
+        <mxCell id="l1" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1" source="h1" target="h1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="120" y="60" as="sourcePoint"/><mxPoint x="120" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="390" y="60" as="sourcePoint"/><mxPoint x="390" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="60" as="sourcePoint"/><mxPoint x="660" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="920" y="60" as="sourcePoint"/><mxPoint x="920" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1180" y="60" as="sourcePoint"/><mxPoint x="1180" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l6" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1415" y="60" as="sourcePoint"/><mxPoint x="1415" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+
+        <!-- Fragmento loop -->
+        <mxCell id="frame_loop" value="loop  [cada 15 min, mientras el estanque esté activo]" style="shape=umlFrame;whiteSpace=wrap;html=1;width=60;height=30;align=left;verticalAlign=top;fontSize=10;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="90" width="1000" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m1" value="enviarLectura(tipo, valor, ts)" style="html=1;endArrow=open;dashed=0;fontSize=9;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="120" y="150" as="sourcePoint"/><mxPoint x="390" y="150" as="targetPoint"/></mxGeometry></mxCell>
+
+        <mxCell id="act1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="384" y="150" width="12" height="170" as="geometry" /></mxCell>
+
+        <mxCell id="m2" value="validarCoherencia(valor)" style="html=1;endArrow=open;fontSize=9;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="396" y="175" as="sourcePoint"/><mxPoint x="396" y="175" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="m2b" value="validarCoherencia(valor)" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="act1" target="h3">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="180" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="m3" value="crear(lectura)" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="act1" target="h3">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="205" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="m4" value="guardar()" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="act1" target="h5">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="240" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="m5" value="ok" style="html=1;endArrow=open;dashed=1;fontSize=9;" edge="1" parent="1" source="h5" target="act1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="270" /></Array></mxGeometry></mxCell>
+
+        <!-- Fragmento alt -->
+        <mxCell id="frame_alt" value="alt" style="shape=umlFrame;whiteSpace=wrap;html=1;width=60;height=30;align=left;verticalAlign=top;fontSize=10;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="1400" height="380" as="geometry" />
+        </mxCell>
+
+        <mxCell id="alt_div" value="" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="80" y="580" as="sourcePoint"/><mxPoint x="1480" y="580" as="targetPoint"/></mxGeometry></mxCell>
+
+        <mxCell id="lbl_alt1" value="[valor fuera de rango óptimo]" style="text;html=1;align=left;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="90" y="400" width="260" height="20" as="geometry" /></mxCell>
+
+        <mxCell id="act2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="384" y="430" width="12" height="130" as="geometry" /></mxCell>
+
+        <mxCell id="m6" value="generarAlerta(parametro)" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="act2" target="h4">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="920" y="440" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="act3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="914" y="440" width="12" height="110" as="geometry" /></mxCell>
+
+        <mxCell id="m7" value="registrarAlerta()" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="act3" target="h5">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1180" y="470" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="m8" value="notificar()  (RF-10, &lt;=60s)" style="html=1;endArrow=open;dashed=1;fontSize=9;" edge="1" parent="1" source="act3" target="h6">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1415" y="510" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="lbl_alt2" value="[valor dentro de rango]" style="text;html=1;align=left;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="90" y="600" width="260" height="20" as="geometry" /></mxCell>
+
+        <mxCell id="act4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="384" y="630" width="12" height="60" as="geometry" /></mxCell>
+
+        <mxCell id="m9" value="registroConfirmado (sin alerta)" style="html=1;endArrow=open;dashed=1;fontSize=9;" edge="1" parent="1" source="act4" target="h1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="250" y="660" /></Array></mxGeometry></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Estados_Estanque" id="est1">
+    <mxGraphModel dx="1300" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="init" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="26" height="26" as="geometry" /></mxCell>
+
+        <mxCell id="s_inactivo" value="Inactivo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="130" y="90" width="150" height="80" as="geometry" /></mxCell>
+
+        <mxCell id="s_prep" value="EnPreparación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="380" y="90" width="150" height="80" as="geometry" /></mxCell>
+
+        <mxCell id="s_activo" value="Activo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;verticalAlign=top;arcSize=15;" vertex="1" parent="1">
+          <mxGeometry x="670" y="40" width="680" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ss_init" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="s_activo">
+          <mxGeometry x="20" y="90" width="20" height="20" as="geometry" /></mxCell>
+
+        <mxCell id="s_aclim" value="Aclimatación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=10;arcSize=30;" vertex="1" parent="s_activo">
+          <mxGeometry x="70" y="60" width="140" height="80" as="geometry" /></mxCell>
+
+        <mxCell id="s_engorde" value="Engorde&#10;&#10;recibirParametro[fueraDeRango]&#10;/ generarAlerta (RF-10)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=9;arcSize=30;" vertex="1" parent="s_activo">
+          <mxGeometry x="290" y="50" width="200" height="100" as="geometry" /></mxCell>
+
+        <mxCell id="s_listo" value="ListoParaCosecha" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=10;arcSize=30;" vertex="1" parent="s_activo">
+          <mxGeometry x="570" y="60" width="150" height="80" as="geometry" /></mxCell>
+
+        <mxCell id="ss1" value="" style="html=1;endArrow=block;" edge="1" parent="s_activo" source="ss_init" target="s_aclim"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ss2" value="registrarGrameo&#10;[semanaCiclo&gt;=2] /&#10;actualizarBiomasa" style="html=1;endArrow=block;fontSize=8;" edge="1" parent="s_activo" source="s_aclim" target="s_engorde"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ss3" value="registrarGrameo&#10;[pesoPromedio&gt;=tallaObjetivo] /&#10;sugerirCosecha (RF-25)" style="html=1;endArrow=block;fontSize=8;" edge="1" parent="s_activo" source="s_engorde" target="s_listo"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="s_cosecha" value="EnCosecha" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="770" y="380" width="150" height="80" as="geometry" /></mxCell>
+
+        <mxCell id="s_mant" value="EnMantenimiento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="380" width="170" height="80" as="geometry" /></mxCell>
+
+        <!-- Transiciones principales -->
+        <mxCell id="t1" value="" style="html=1;endArrow=block;" edge="1" parent="1" source="init" target="s_inactivo"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="t2" value="iniciarPreparacion&#10;[orden autorizada] /&#10;registrarAuditoria" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="s_inactivo" target="s_prep"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="t3" value="registrarSiembra&#10;[cantidad&lt;=capacidad+sobrecarga] /&#10;crearSiembra, notificarTecnico" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="s_prep" target="s_activo"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="t4" value="autorizarCosecha&#10;[subestado=ListoParaCosecha] /&#10;bloquearNuevasSiembras" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="s_activo" target="s_cosecha"><mxGeometry relative="1" as="geometry">
+          <Array as="points"><mxPoint x="1010" y="330" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="t5" value="registrarCosecha [pesoTotal&gt;0] /&#10;calcularRendimiento, calcularCosto,&#10;cerrarSiembra" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="s_cosecha" target="s_inactivo"><mxGeometry relative="1" as="geometry">
+          <Array as="points"><mxPoint x="500" y="600" /><mxPoint x="500" y="500" /><mxPoint x="205" y="500" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="t6" value="prepararNuevoCiclo&#10;[cosecha registrada] /&#10;limpiarEstanque" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="s_cosecha" target="s_prep"><mxGeometry relative="1" as="geometry">
+          <Array as="points"><mxPoint x="620" y="600" /><mxPoint x="620" y="450" /><mxPoint x="455" y="200" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="t7" value="reportarFalla&#10;[equipo crítico] /&#10;crearOrdenMantenimiento (RF-21)" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="s_activo" target="s_mant"><mxGeometry relative="1" as="geometry">
+          <Array as="points"><mxPoint x="1185" y="330" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="t8" value="cerrarOrden [estado=concluida] /&#10;registrarHistorial" style="html=1;endArrow=block;fontSize=9;" edge="1" parent="1" source="s_mant" target="s_activo"><mxGeometry relative="1" as="geometry">
+          <Array as="points"><mxPoint x="1330" y="300" /></Array></mxGeometry></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
