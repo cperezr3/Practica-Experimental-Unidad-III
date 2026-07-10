@@ -495,7 +495,7 @@ Una orden de mantenimiento consume varios insumos (repuestos, combustible) y un 
 \end{longtable}
 
 \subsection{Diagrama ER en notación Crow's Foot}
-\figuraSRS{figuras/er_crowsfoot.png}{Diagrama Entidad--Relación del sistema AquaGest en notación Crow's Foot}{fig:er}
+\figuraSRS{figuras/01_ER_crowsfoot-ER_AquaGest.drawio.png}{Diagrama Entidad--Relación del sistema AquaGest en notación Crow's Foot}{fig:er}
 
 \subsection{Verificación de normalización hasta 3FN}
 \begin{itemize}[leftmargin=1.4em]
@@ -599,14 +599,14 @@ $+$calcularRendimiento(sup: Decimal): Decimal; $+$calcularCostoProduccion(): Dec
 
 \end{longtable}
 
-\figuraSRS{figuras/clases_uml.png}{Diagrama de clases UML del sistema AquaGest (con clases asociativas para las relaciones M:N)}{fig:clases}
+\figuraSRS{figuras/02_Clases_UML-Clases_AquaGest.drawio.png}{Diagrama de clases UML del sistema AquaGest (con clases asociativas para las relaciones M:N)}{fig:clases}
 
 % ============================================================
 \section{Paso 3 --- Modelo funcional}
 \subsection{DFD Nivel 0 (diagrama de contexto)}
 El proceso central \textbf{P0 --- Gestionar operación de la camaronera (AquaGest)} interactúa con siete entidades externas: Administrador, Técnico Acuícola, Operario de Producción, Bodeguero, Supervisor de Mantenimiento, Sensores IoT y Módulo de IA. Los flujos principales son: registro de actividades y datos operativos (entrada desde los roles), lecturas en tiempo real (entrada desde sensores IoT), datos históricos (salida hacia el Módulo IA) y predicciones (entrada desde el Módulo IA), y reportes, alertas y órdenes de trabajo (salidas hacia los roles). Este diagrama conserva y refina el Diagrama de Contexto ya elaborado en la Entrega~1B (Figura~1 del SRS).
 
-\figuraSRS{figuras/dfd_nivel0.png}{DFD Nivel 0 --- proceso central, entidades externas y flujos de datos}{fig:dfd0}
+\figuraSRS{figuras/03_DFD_Nivel0.drawio.png}{DFD Nivel 0 --- proceso central, entidades externas y flujos de datos}{fig:dfd0}
 
 \subsection{DFD Nivel 1}
 El proceso P0 se descompone en \textbf{siete subprocesos} y nueve almacenes (Tabla~\ref{tab:dfd1}); el balanceo con el Nivel~0 se verifica en la Tabla~\ref{tab:balanceo}.
@@ -648,7 +648,7 @@ P7 Gestionar cosechas, reportes y predicción (RF-22..RF-25) & Datos de cosecha,
 
 \end{longtable}
 
-\figuraSRS{figuras/dfd_nivel1.png}{DFD Nivel 1 --- descomposición de P0 en siete subprocesos y nueve almacenes}{fig:dfd1}
+\figuraSRS{figuras/04_DFD_Nivel1.drawio.png}{DFD Nivel 1 --- descomposición de P0 en siete subprocesos y nueve almacenes}{fig:dfd1}
 
 \renewcommand{\arraystretch}{1.2}
 
@@ -692,12 +692,12 @@ Reportes de producción y comparativos & Salida & P7\\
 \subsection{DFD esencial}
 El DFD esencial modela la respuesta lógica ideal al evento de negocio más crítico identificado en la elicitación (EV-01, EV-02): \textit{``llega una medición de parámetro de agua''}. La respuesta esencial, independiente de la tecnología, es: (1)~validar coherencia física del valor; (2)~almacenar la medición; (3)~comparar contra el rango óptimo vigente; (4)~si está fuera de rango, emitir alerta y esperar acción correctiva; (5)~archivar la medición y la acción para el análisis histórico y la predicción. Esta esencia agrupa RF-09, RF-10 y RF-11 y es neutral respecto a si el dato proviene de un sensor IoT o de un registro manual.
 
-\figuraSRS{figuras/dfd_esencial.png}{DFD esencial --- respuesta lógica al evento ``llega una medición de parámetro de agua''}{fig:dfdes}
+\figuraSRS{figuras/05_DFD_Esencial.drawio.png}{DFD esencial --- respuesta lógica al evento ``llega una medición de parámetro de agua''}{fig:dfdes}
 
 \subsection{Diagrama de actividades UML}
 Se modela el proceso \textbf{Registrar alimentación diaria} (CU-03; RF-12, RF-13, RF-19) con tres \textit{swimlanes}: Operario de Producción, Sistema AquaGest y Bodeguero. El flujo incluye: decisión \textit{[¿existe grameo previo?]} (con ración sugerida o registro manual), un \textbf{fork} que paraleliza el registro del consumo y el descuento de stock del balanceado, un \textbf{join} de sincronización previo a la confirmación, y el \textbf{flujo de objeto} \texttt{RegistroAlimentacion} que transita por los estados [propuesto] $\rightarrow$ [validado] $\rightarrow$ [persistido].
 
-\figuraSRS{figuras/actividades_uml.png}{Diagrama de actividades UML --- Registrar alimentación diaria (swimlanes, decisión, fork/join y flujo de objetos)}{fig:actividades}
+\figuraSRS{figuras/06_Actividades_UML.drawio.png}{Diagrama de actividades UML --- Registrar alimentación diaria (swimlanes, decisión, fork/join y flujo de objetos)}{fig:actividades}
 
 
 % ============================================================
